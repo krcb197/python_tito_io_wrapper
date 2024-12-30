@@ -34,7 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install .
-          python -m pip install -U pylint
+          python -m pip install .[dev]
 
       - name: Run Main code Lint
         run: pylint src/pytito
@@ -66,7 +66,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install .
-          python -m pip install -U mypy
+          python -m pip install .[dev]
       - name: Type Check
         run: mypy src/pytito
 
