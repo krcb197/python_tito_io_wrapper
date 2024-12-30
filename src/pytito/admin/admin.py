@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This file provides the admin api root class
 """
+from typing import Optional
 
 from ._base_client import AdminAPIBase
 from .account import Account
@@ -28,8 +29,8 @@ class AdminAPI(AdminAPIBase):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self) -> None:
-        super().__init__(json_content=None)
+    def __init__(self, api_key:Optional[str]=None) -> None:
+        super().__init__(json_content=None, api_key=api_key)
         self._populate_json()
         self.accounts = {account_slug:Account(account_slug=account_slug)
                          for account_slug in self.__account_slugs}

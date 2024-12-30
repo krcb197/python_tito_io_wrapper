@@ -69,13 +69,13 @@ class AdminAPIBase(ABC):
         full_end_point = self._end_point + '/' + endpoint
 
         response = requests.get(
-            full_end_point,
+            url=full_end_point,
             headers={"Accept": "application/json",
                      "Authorization": f"Token token={self.__api_key()}"},
             timeout=10.0
         )
 
         if not response.status_code == 200:
-            raise RuntimeError('Hello failed')
+            raise RuntimeError(f'Hello failed with status code: {response.status_code}')
 
         return response.json()
