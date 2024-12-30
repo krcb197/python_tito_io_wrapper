@@ -19,17 +19,9 @@ This file provides the ticket class
 """
 from typing import Optional, Any
 from enum import StrEnum
-import functools
 
 
-from ._base_client import AdminAPIBase, UnpopulatedException
-
-
-class UnpopulatedTicketException(UnpopulatedException):
-    """
-    Exception for attempting to access a property of the event if the json has not been
-    populated
-    """
+from ._base_client import AdminAPIBase
 
 
 class TicketState(StrEnum):
@@ -50,35 +42,26 @@ class Ticket(AdminAPIBase):
 
     def __init__(self, account_slug:str, event_slug:str, ticket_slug:str,
                  json_content:Optional[dict[str, Any]]=None) -> None:
-        super().__init__()
+        super().__init__(json_content=json_content)
         self.__account_slug = account_slug
         self.__event_slug = event_slug
         self.__ticket_slug = ticket_slug
-        self.__json_content = json_content
-
-    def __json_content_present(func):
-        """Print the runtime of the decorated function"""
-
-        @functools.wraps(func)
-        def wrapper_json_content_present(self, *args, **kwargs):
-            if self.__json_content is None:
-                raise UnpopulatedTicketException('JSON content is not populated')
-            return func(*args, **kwargs)
-
-        return wrapper_json_content_present
 
     @property
-    @__json_content_present
+    def _end_point(self) -> str:
+        return super()._end_point +\
+               f'/{self.__account_slug}/{self.__event_slug}/{self.__ticket_slug}'
+
+    @property
     def state(self) -> TicketState:
         """
         Event title
         """
-        return TicketState(self.__json_content['state'])
+        return TicketState(self._json_content['state'])
 
     @property
-    @__json_content_present
     def name(self) -> str:
         """
         Name of the ticket holder (First Name + Last Name)
         """
-        return TicketState(self.__json_content['name'])
+        return TicketState(self._json_content['name'])

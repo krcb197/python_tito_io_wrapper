@@ -29,20 +29,21 @@ class AdminAPI(AdminAPIBase):
     # pylint: disable=too-few-public-methods
 
     def __init__(self) -> None:
-        account_slugs = self.hello()
+        super().__init__(json_content=None)
+        self._populate_json()
         self.accounts = {account_slug:Account(account_slug=account_slug)
-                         for account_slug in account_slugs}
+                         for account_slug in self.__account_slugs}
 
     @property
     def _end_point(self) -> str:
         return super()._end_point
 
-    def hello(self) -> list[str]:
-        """
-        Calls the hello API to confirm a connection
+    def _populate_json(self) -> None:
+        self._json_content = self._get_response('hello')
 
-        return:
-            list of authorised accounts
+    @property
+    def __account_slugs(self) -> list[str]:
         """
-
-        return self._get_response('hello')['accounts']
+        All the account slugs associated with the admin API key
+        """
+        return self._json_content['accounts']

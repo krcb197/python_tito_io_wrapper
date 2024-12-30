@@ -19,7 +19,7 @@ This file provides the base class for the AdminAPI classses
 """
 import os
 from abc import ABC
-from typing import Any
+from typing import Any, Optional
 
 import requests
 
@@ -37,15 +37,32 @@ class AdminAPIBase(ABC):
     """
     # pylint: disable=too-few-public-methods
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, json_content:Optional[dict[str, Any]]=None,
+                 api_key:Optional[str]=None) -> None:
+        self.__api_key_internal = api_key
+        self.__json_content = json_content
 
     def __api_key(self) -> str:
-        return os.environ['TITO_API_KEY']
+        if self.__api_key_internal is None:
+            return os.environ['TITO_API_KEY']
+        return self.__api_key_internal
+
+    @property
+    def _json_content(self) -> dict[str, Any]:
+        if self.__json_content is None:
+            raise UnpopulatedException('json content is not populated')
+        return self.__json_content
+
+    @_json_content.setter
+    def _json_content(self, content: dict[str, Any]) -> None:
+        self.__json_content = content
 
     @property
     def _end_point(self) -> str:
         return "https://api.tito.io/v3"
+
+    def _populate_json(self) -> None:
+        self.__json_content = self._get_response(endpoint='')
 
     def _get_response(self, endpoint: str) -> dict[str, Any]:
 
@@ -54,7 +71,8 @@ class AdminAPIBase(ABC):
         response = requests.get(
             full_end_point,
             headers={"Accept": "application/json",
-                     "Authorization": f"Token token={self.__api_key()}"}
+                     "Authorization": f"Token token={self.__api_key()}"},
+            timeout=10.0
         )
 
         if not response.status_code == 200:

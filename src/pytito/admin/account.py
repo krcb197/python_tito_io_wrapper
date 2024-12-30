@@ -17,23 +17,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This file provides the account class
 """
+from typing import Optional, Any
+from operator import attrgetter
 
 from ._base_client import AdminAPIBase
 
 from .event import Event
+
 
 class Account(AdminAPIBase):
     """
     One of the accounts available through the Tito IO AdminAPI
     """
 
-    def __init__(self, account_slug:str):
-        super().__init__()
+    def __init__(self, account_slug:str, json_content:Optional[dict[str, Any]]=None):
+        super().__init__(json_content=json_content)
         self.__account_slug = account_slug
 
     @property
     def _end_point(self) -> str:
         return super()._end_point + f'/{self.__account_slug}'
+
+    def _populate_json(self) -> None:
+        self._json_content = self._get_response(endpoint='')['account']
+        if self.__account_slug != self._json_content['slug']:
+            raise ValueError('slug in json content does not match expected value')
 
     def __event_getter(self, end_point: str) -> dict[str, Event]:
         response = self._get_response(end_point)
@@ -54,6 +62,15 @@ class Account(AdminAPIBase):
         return self.__event_getter('events')
 
     @property
+    def next_event(self) -> Event:
+        """
+        Return the chronologically first of the upcoming events
+        """
+        upcoming_events = list(self.events.values())
+        upcoming_events.sort(key=attrgetter('start_at'))
+        return upcoming_events[0]
+
+    @property
     def past_events(self) -> dict[str, Event]:
         """
         Return the upcoming events
@@ -66,3 +83,17 @@ class Account(AdminAPIBase):
         Return the upcoming events
         """
         return self.__event_getter('events/archived')
+
+    @property
+    def name(self) -> str:
+        """
+        Account Name
+        """
+        return self._json_content['name']
+
+    @property
+    def description(self) -> str:
+        """
+        Account Description
+        """
+        return self._json_content['description']

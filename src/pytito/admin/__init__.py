@@ -18,3 +18,4 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .admin import AdminAPI
 from .event import Event
 from .ticket import Ticket
+from .account import Account

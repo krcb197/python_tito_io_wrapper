@@ -19,14 +19,10 @@ This file provides the event class
 """
 from typing import Optional, Any
 
-from ._base_client import AdminAPIBase, UnpopulatedException
-from .ticket import Ticket
+from datetime import datetime
 
-class UnpopulatedEventException(UnpopulatedException):
-    """
-    Exception for attempting to access a property of the event if the json has not been
-    populated
-    """
+from ._base_client import AdminAPIBase
+from .ticket import Ticket
 
 
 class Event(AdminAPIBase):
@@ -36,10 +32,10 @@ class Event(AdminAPIBase):
 
     def __init__(self, account_slug:str, event_slug:str,
                  json_content:Optional[dict[str, Any]]=None) -> None:
-        super().__init__()
+        super().__init__(json_content=json_content)
         self.__account_slug = account_slug
         self.__event_slug = event_slug
-        self.__json_content = json_content
+
 
     @property
     def _end_point(self) -> str:
@@ -50,10 +46,7 @@ class Event(AdminAPIBase):
         """
         Event title
         """
-        if self.__json_content is None:
-            raise UnpopulatedEventException('title is not available')
-
-        return self.__json_content['title']
+        return self._json_content['title']
 
     def __ticket_getter(self) -> list[Ticket]:
 
@@ -71,3 +64,10 @@ class Event(AdminAPIBase):
         retrieve all the tickets for the event
         """
         return self.__ticket_getter()
+
+    @property
+    def start_at(self) -> datetime:
+        """
+        Start date and time for the event
+        """
+        return datetime.fromisoformat(self._json_content['start_at'])
