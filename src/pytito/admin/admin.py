@@ -47,4 +47,6 @@ class AdminAPI(AdminAPIBase):
         """
         All the account slugs associated with the admin API key
         """
+        if not isinstance(self._json_content['accounts'], list):
+            raise TypeError('accounts should be a list')
         return self._json_content['accounts']

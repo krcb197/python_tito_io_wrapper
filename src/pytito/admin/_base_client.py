@@ -31,6 +31,12 @@ class UnpopulatedException(Exception):
     """
 
 
+class UnauthorizedException(Exception):
+    """
+    Exception for the request not being authenticated
+    """
+
+
 class AdminAPIBase(ABC):
     """
     Base Class for the Tito IO Admin APIs
@@ -74,6 +80,9 @@ class AdminAPIBase(ABC):
                      "Authorization": f"Token token={self.__api_key()}"},
             timeout=10.0
         )
+
+        if response.status_code == 401:
+            raise UnauthorizedException(response.json()['message'])
 
         if not response.status_code == 200:
             raise RuntimeError(f'Hello failed with status code: {response.status_code}')

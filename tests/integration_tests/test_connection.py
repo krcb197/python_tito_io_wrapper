@@ -17,11 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This module is for testing the connection
 """
+from pytito import AdminAPI
+from pytito.admin import UnauthorizedException
 
 import pytest
 
-def test_connection():
+
+def test_bad_api_key():
     """
-    Test making a connection to the server
+    test that using a known bad API key results in some failures
     """
-    pytest.skip('No Integration tests have been written yet')
+    with pytest.raises(UnauthorizedException):
+        _ = AdminAPI(api_key='bad_key')
+

@@ -19,3 +19,5 @@ from .admin import AdminAPI
 from .event import Event
 from .ticket import Ticket
 from .account import Account
+
+from ._base_client import UnauthorizedException

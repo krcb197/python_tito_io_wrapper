@@ -17,50 +17,49 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This module is for testing root of the admin api
 """
-import requests
-
 import pytest
 
 from pytito import AdminAPI
+from pytito.admin import UnauthorizedException
 
-from .conftest import MockedConfig, MockedGetResponse
 
-
-def test_local_api_key_connection(mocked_requests): # pylint:disable=unused-argument
+def test_local_api_key_connection(requests_mock): # pylint:disable=unused-argument
     """
     Check that if there is an API key provided it does not use the one from the environment
     variables
     """
-    _ = AdminAPI(api_key='fake_api_key')
-    #pylint: disable-next=no-member
-    requests.get.assert_called_once_with(url="https://api.tito.io/v3/hello",
-                                         timeout=10.0,
-                                         headers={"Accept": "application/json",
-                                                  "Authorization": "Token token=fake_api_key"})
+    requests_mock.get("https://api.tito.io/v3/hello", status_code=200,
+                      json={'accounts':['account1_slug']})
+    _ = AdminAPI('provided_key')
+
+    assert requests_mock.called
+    assert len(requests_mock.request_history) == 1
+    request_headers = requests_mock.request_history[0].headers
+    assert 'Authorization' in request_headers
+    assert request_headers['Authorization'] == f"Token token=provided_key"
 
 
-def test_environment_api_key_connection(mocked_requests):
+def test_environment_api_key_connection(requests_mock, mocked_enviroment_api_key):
     """
     Check that the default behaviour is to use the environment variable
     """
+    requests_mock.get("https://api.tito.io/v3/hello", status_code=200,
+                      json={'accounts':['account1_slug']})
     _ = AdminAPI()
-    # pylint: disable-next=no-member
-    requests.get.assert_called_once_with(
-        url="https://api.tito.io/v3/hello",
-        timeout=10.0,
-        headers={"Accept": "application/json",
-                 "Authorization": f"Token token={mocked_requests.environment_api_key}"})
+
+    assert requests_mock.called
+    assert len(requests_mock.request_history) == 1
+    request_headers = requests_mock.request_history[0].headers
+    assert 'Authorization' in request_headers
+    assert request_headers['Authorization'] == f"Token token={mocked_enviroment_api_key}"
 
 
-@pytest.mark.parametrize("mocked_requests",
-                         [MockedConfig(mocked_get_responses={
-                             'hello':MockedGetResponse(status_code=401),
-                         })],
-                         indirect=True)
-def test_failed_connection(mocked_requests):
+def test_failed_connection(requests_mock, mocked_enviroment_api_key):
     """
     Check that the default behaviour is to use the environment variable
     """
-    with pytest.raises(RuntimeError):
+    requests_mock.get("https://api.tito.io/v3/hello", status_code=401,
+                      json={'message':'bad API key'})
+    with pytest.raises(UnauthorizedException):
         _ = AdminAPI()
 
