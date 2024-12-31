@@ -20,6 +20,8 @@ This module is for testing the connection
 
 import pytest
 
-
 def test_connection():
+    """
+    Test making a connection to the server
+    """
     pytest.skip('No Integration tests have been written yet')
