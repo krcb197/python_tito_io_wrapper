@@ -18,10 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 This file provides the ticket class
 """
 from typing import Optional, Any
-from enum import StrEnum
-
+import sys
 
 from ._base_client import AdminAPIBase
+
+if sys.version_info < (3,11):
+    from strenum import StrEnum
+else:
+    from enum import StrEnum
 
 
 class TicketState(StrEnum):

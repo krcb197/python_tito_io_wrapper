@@ -9,6 +9,7 @@ dynamic = ["version"]
 requires-python = ">=3.9.2"
 dependencies = [
     "requests",
+    "StrEnum;python_version<'3.11'"
 ]
 
 authors = [
