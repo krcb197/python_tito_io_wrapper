@@ -68,4 +68,4 @@ class Ticket(AdminAPIBase):
         """
         Name of the ticket holder (First Name + Last Name)
         """
-        return TicketState(self._json_content['name'])
+        return self._json_content['name']
