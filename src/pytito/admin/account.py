@@ -20,7 +20,7 @@ This file provides the account class
 from typing import Optional, Any
 from operator import attrgetter
 
-from ._base_client import AdminAPIBase, UnpopulatedException
+from ._base_client import AdminAPIBase
 
 from .event import Event
 
