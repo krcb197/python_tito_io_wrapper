@@ -17,10 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This module is for testing the connection
 """
+import pytest
+
 from pytito import AdminAPI
 from pytito.admin import UnauthorizedException
-
-import pytest
 
 
 def test_bad_api_key():
@@ -29,4 +29,3 @@ def test_bad_api_key():
     """
     with pytest.raises(UnauthorizedException):
         _ = AdminAPI(api_key='bad_key')
-

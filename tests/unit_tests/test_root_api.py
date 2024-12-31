@@ -23,7 +23,7 @@ from pytito import AdminAPI
 from pytito.admin import UnauthorizedException
 
 
-def test_local_api_key_connection(requests_mock): # pylint:disable=unused-argument
+def test_local_api_key_connection(requests_mock):
     """
     Check that if there is an API key provided it does not use the one from the environment
     variables
@@ -36,10 +36,10 @@ def test_local_api_key_connection(requests_mock): # pylint:disable=unused-argume
     assert len(requests_mock.request_history) == 1
     request_headers = requests_mock.request_history[0].headers
     assert 'Authorization' in request_headers
-    assert request_headers['Authorization'] == f"Token token=provided_key"
+    assert request_headers['Authorization'] == "Token token=provided_key"
 
 
-def test_environment_api_key_connection(requests_mock, mocked_enviroment_api_key):
+def test_environment_api_key_connection(requests_mock, mocked_environment_api_key):
     """
     Check that the default behaviour is to use the environment variable
     """
@@ -51,10 +51,10 @@ def test_environment_api_key_connection(requests_mock, mocked_enviroment_api_key
     assert len(requests_mock.request_history) == 1
     request_headers = requests_mock.request_history[0].headers
     assert 'Authorization' in request_headers
-    assert request_headers['Authorization'] == f"Token token={mocked_enviroment_api_key}"
+    assert request_headers['Authorization'] == f"Token token={mocked_environment_api_key}"
 
 
-def test_failed_connection(requests_mock, mocked_enviroment_api_key):
+def test_failed_connection(requests_mock, mocked_environment_api_key):
     """
     Check that the default behaviour is to use the environment variable
     """
@@ -63,3 +63,8 @@ def test_failed_connection(requests_mock, mocked_enviroment_api_key):
     with pytest.raises(UnauthorizedException):
         _ = AdminAPI()
 
+    assert requests_mock.called
+    assert len(requests_mock.request_history) == 1
+    request_headers = requests_mock.request_history[0].headers
+    assert 'Authorization' in request_headers
+    assert request_headers['Authorization'] == f"Token token={mocked_environment_api_key}"

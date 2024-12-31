@@ -21,8 +21,11 @@ This module provides supporting test fixtures for the unit test
 import pytest
 
 
-@pytest.fixture(scope='function', name='mocked_enviroment_api_key')
-def mocked_enviroment_api_key_implementation(mocker):
+@pytest.fixture(scope='function', name='mocked_environment_api_key')
+def mocked_environment_api_key_implementation(mocker):
+    """
+    Mock the API key in the environment variables
+    """
 
     key = 'fake_environment_var_api_key'
 
