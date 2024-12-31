@@ -119,9 +119,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .[integration_tests]
 
-      - name: Test Development Runner
+      - name: Run Integration Tests
+        env:
+          TITO_API_KEY: ${{ secrets.TITO_API_KEY }}
         run: |
-
           pytest tests/integration_tests
 
   #-------------------------------------------------------------------------------

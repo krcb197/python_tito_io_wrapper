@@ -20,7 +20,7 @@ This file provides the account class
 from typing import Optional, Any
 from operator import attrgetter
 
-from ._base_client import AdminAPIBase
+from ._base_client import AdminAPIBase, UnpopulatedException
 
 from .event import Event
 
@@ -31,7 +31,7 @@ class Account(AdminAPIBase):
     """
 
     def __init__(self, account_slug:str, json_content:Optional[dict[str, Any]]=None):
-        super().__init__(json_content=json_content)
+        super().__init__(json_content=json_content, allow_automatic_json_retrieval=True)
         self.__account_slug = account_slug
 
     @property

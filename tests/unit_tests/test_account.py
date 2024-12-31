@@ -15,27 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-This module is for testing the connection
+This module is for testing root of the account
 """
-import pytest
-
-from pytito import AdminAPI
-from pytito.admin import UnauthorizedException
 from pytito.admin import Account
 
+def test_accounts(mocked_data, mocked_admin_api):
+    """
+    Check the accounts are instantiated correctly
+    """
+    for data_model_account, (admin_api_account_slug, admin_api_account) in zip(mocked_data, mocked_admin_api.accounts.items()):
+        assert isinstance(admin_api_account, Account)
+        assert data_model_account.slug == admin_api_account_slug
 
-def test_bad_api_key():
-    """
-    test that using a known bad API key results in some failures
-    """
-    with pytest.raises(UnauthorizedException):
-        _ = AdminAPI(api_key='bad_key')
-
-
-def test_pytito_connection(pytito_account):
-    """
-    test the the connection to the pytito account (used by many of the other tests) works
-    correctly
-    """
-    assert isinstance(pytito_account, Account)
-    assert pytito_account.name == 'pytito'

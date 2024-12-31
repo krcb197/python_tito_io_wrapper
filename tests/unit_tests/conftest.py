@@ -17,8 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This module provides supporting test fixtures for the unit test
 """
+from typing import Optional
 
 import pytest
+from faker import Faker
+from faker.providers import company
+
+from pytito import AdminAPI
 
 
 @pytest.fixture(scope='function', name='mocked_environment_api_key')
@@ -32,3 +37,40 @@ def mocked_environment_api_key_implementation(mocker):
     mocker.patch.dict('os.environ', {'TITO_API_KEY': key})
 
     yield key
+
+
+class Account:
+    FAKER:Optional[Faker] = None
+
+    def __init__(self):
+        if self.FAKER is None:
+            self.FAKER = Faker()
+            self.FAKER.add_provider(company)
+
+        self.name = self.FAKER.bs()
+        self.description = self.FAKER.catch_phrase()
+
+    @property
+    def slug(self) -> str:
+        return self.name.replace(' ', '-')
+
+
+@pytest.fixture(scope='function', name='mocked_data')
+def mocked_data_implementation(requests_mock):
+    yield [Account() for _ in range(2)]
+
+
+@pytest.fixture(scope='function', name='mocked_admin_api')
+def mocked_admin_api_implementation(requests_mock, mocked_data):
+    """
+    A test fixture that provides an mocked AdminAPI with mocked data
+    """
+    def hello_json_content(request, context):
+        return {'accounts':[item.slug for item in mocked_data] }
+
+    requests_mock.get("https://api.tito.io/v3/hello", status_code=200,
+                      json=hello_json_content)
+
+    yield AdminAPI(api_key='fake_api_key')
+
+

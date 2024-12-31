@@ -44,9 +44,11 @@ class AdminAPIBase(ABC):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, json_content:Optional[dict[str, Any]]=None,
-                 api_key:Optional[str]=None) -> None:
+                 api_key:Optional[str]=None,
+                 allow_automatic_json_retrieval:bool=False) -> None:
         self.__api_key_internal = api_key
         self.__json_content = json_content
+        self.__allow_automatic_json_retrieval = allow_automatic_json_retrieval
 
     def __api_key(self) -> str:
         if self.__api_key_internal is None:
@@ -56,7 +58,12 @@ class AdminAPIBase(ABC):
     @property
     def _json_content(self) -> dict[str, Any]:
         if self.__json_content is None:
+            if self.__allow_automatic_json_retrieval:
+                self._populate_json()
+
+        if self.__json_content is None:
             raise UnpopulatedException('json content is not populated')
+
         return self.__json_content
 
     @_json_content.setter
