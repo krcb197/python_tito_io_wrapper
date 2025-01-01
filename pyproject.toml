@@ -53,12 +53,13 @@ dev = [
     "pylint",
     "coverage",
     "types-requests",
-    "pytest"
+    "pytest",
 ]
 unit_tests = [
     "pytest",
     "pytest-mock",
-    "requests-mock"
+    "requests-mock",
+    "Faker"
     ]
 integration_tests = [
     "pytest",

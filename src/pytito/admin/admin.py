@@ -32,7 +32,7 @@ class AdminAPI(AdminAPIBase):
     def __init__(self, api_key:Optional[str]=None) -> None:
         super().__init__(json_content=None, api_key=api_key)
         self._populate_json()
-        self.accounts = {account_slug:Account(account_slug=account_slug)
+        self.accounts = {account_slug:Account(account_slug=account_slug, api_key=api_key)
                          for account_slug in self.__account_slugs}
 
     @property

@@ -30,9 +30,13 @@ class Account(AdminAPIBase):
     One of the accounts available through the Tito IO AdminAPI
     """
 
-    def __init__(self, account_slug:str, json_content:Optional[dict[str, Any]]=None):
-        super().__init__(json_content=json_content, allow_automatic_json_retrieval=True)
+    def __init__(self, account_slug: str, json_content: Optional[dict[str, Any]] = None,
+                 api_key: Optional[str] = None):
+        super().__init__(json_content=json_content,
+                         allow_automatic_json_retrieval=True,
+                         api_key=api_key)
         self.__account_slug = account_slug
+        self.__api_key_internal = api_key
 
     @property
     def _end_point(self) -> str:
@@ -51,6 +55,7 @@ class Account(AdminAPIBase):
                 raise RuntimeError('Account Slug inconsistency')
             slug = event['slug']
             return_dict[slug] = Event(event_slug=slug, account_slug=self.__account_slug,
+                                      api_key=self.__api_key_internal,
                                       json_content=event)
         return return_dict
 

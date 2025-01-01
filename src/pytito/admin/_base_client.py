@@ -79,7 +79,10 @@ class AdminAPIBase(ABC):
 
     def _get_response(self, endpoint: str) -> dict[str, Any]:
 
-        full_end_point = self._end_point + '/' + endpoint
+        if endpoint == '':
+            full_end_point = self._end_point
+        else:
+            full_end_point = self._end_point + '/' + endpoint
 
         response = requests.get(
             url=full_end_point,

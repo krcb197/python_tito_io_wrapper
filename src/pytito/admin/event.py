@@ -31,8 +31,9 @@ class Event(AdminAPIBase):
     """
 
     def __init__(self, account_slug:str, event_slug:str,
-                 json_content:Optional[dict[str, Any]]=None) -> None:
-        super().__init__(json_content=json_content)
+                 json_content:Optional[dict[str, Any]]=None,
+                 api_key: Optional[str] = None) -> None:
+        super().__init__(json_content=json_content, api_key=api_key)
         self.__account_slug = account_slug
         self.__event_slug = event_slug
 
