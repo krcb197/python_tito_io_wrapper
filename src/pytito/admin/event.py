@@ -37,10 +37,18 @@ class Event(AdminAPIBase):
         self.__account_slug = account_slug
         self.__event_slug = event_slug
 
+    @property
+    def _account_slug(self) -> str:
+        return self.__account_slug
+
+    @property
+    def _event_slug(self) -> str:
+        return self.__event_slug
+
 
     @property
     def _end_point(self) -> str:
-        return super()._end_point + f'/{self.__account_slug}/{self.__event_slug}'
+        return super()._end_point + f'/{self._account_slug}/{self._event_slug}'
 
     @property
     def title(self) -> str:
@@ -53,7 +61,7 @@ class Event(AdminAPIBase):
 
         def ticket_factory(json_content:dict[str, Any]) -> Ticket:
             ticket_slug = json_content['slug']
-            return Ticket(event_slug=self.__event_slug, account_slug=self.__account_slug,
+            return Ticket(event_slug=self.__event_slug, account_slug=self._account_slug,
                           ticket_slug=ticket_slug, json_content=json_content)
 
         response = self._get_response('tickets')

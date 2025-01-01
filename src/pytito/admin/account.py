@@ -39,22 +39,26 @@ class Account(AdminAPIBase):
         self.__api_key_internal = api_key
 
     @property
+    def _account_slug(self) -> str:
+        return self.__account_slug
+
+    @property
     def _end_point(self) -> str:
-        return super()._end_point + f'/{self.__account_slug}'
+        return super()._end_point + f'/{self._account_slug}'
 
     def _populate_json(self) -> None:
         self._json_content = self._get_response(endpoint='')['account']
-        if self.__account_slug != self._json_content['slug']:
+        if self._account_slug != self._json_content['slug']:
             raise ValueError('slug in json content does not match expected value')
 
     def __event_getter(self, end_point: str) -> dict[str, Event]:
         response = self._get_response(end_point)
         return_dict:dict[str, Event] = {}
         for event in response['events']:
-            if event['account_slug'] != self.__account_slug:
+            if event['account_slug'] != self._account_slug:
                 raise RuntimeError('Account Slug inconsistency')
             slug = event['slug']
-            return_dict[slug] = Event(event_slug=slug, account_slug=self.__account_slug,
+            return_dict[slug] = Event(event_slug=slug, account_slug=self._account_slug,
                                       api_key=self.__api_key_internal,
                                       json_content=event)
         return return_dict

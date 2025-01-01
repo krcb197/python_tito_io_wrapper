@@ -52,13 +52,25 @@ class Ticket(AdminAPIBase):
         self.__ticket_slug = ticket_slug
 
     @property
+    def _account_slug(self) -> str:
+        return self.__account_slug
+
+    @property
+    def _event_slug(self) -> str:
+        return self.__event_slug
+
+    @property
+    def _ticket_slug(self) -> str:
+        return self.__ticket_slug
+
+    @property
     def _end_point(self) -> str:
         return super()._end_point +\
-               f'/{self.__account_slug}/{self.__event_slug}/tickets/{self.__ticket_slug}'
+               f'/{self._account_slug}/{self._event_slug}/tickets/{self._ticket_slug}'
 
     def _populate_json(self) -> None:
         self._json_content = self._get_response(endpoint='')['ticket']
-        if self.__ticket_slug != self._json_content['slug']:
+        if self._ticket_slug != self._json_content['slug']:
             raise ValueError('slug in json content does not match expected value')
         if self._json_content['view'] != 'extended':
             raise ValueError('expected the extended view of the ticket')
