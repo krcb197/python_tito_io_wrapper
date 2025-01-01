@@ -54,7 +54,7 @@ class Ticket(AdminAPIBase):
     @property
     def _end_point(self) -> str:
         return super()._end_point +\
-               f'/{self.__account_slug}/{self.__event_slug}/{self.__ticket_slug}'
+               f'/{self.__account_slug}/{self.__event_slug}/tickets/{self.__ticket_slug}'
 
     @property
     def state(self) -> TicketState:
