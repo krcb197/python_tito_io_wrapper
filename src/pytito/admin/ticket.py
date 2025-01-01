@@ -56,6 +56,13 @@ class Ticket(AdminAPIBase):
         return super()._end_point +\
                f'/{self.__account_slug}/{self.__event_slug}/tickets/{self.__ticket_slug}'
 
+    def _populate_json(self) -> None:
+        self._json_content = self._get_response(endpoint='')['ticket']
+        if self.__ticket_slug != self._json_content['slug']:
+            raise ValueError('slug in json content does not match expected value')
+        if self._json_content['view'] != 'extended':
+            raise ValueError('expected the extended view of the ticket')
+
     @property
     def state(self) -> TicketState:
         """
@@ -69,3 +76,22 @@ class Ticket(AdminAPIBase):
         Name of the ticket holder (First Name + Last Name)
         """
         return self._json_content['name']
+
+    @property
+    def reference(self) -> str:
+        """
+        Ticket reference (this is shown in guest emails) and therefore with is what ticket holder
+        will consider to be their: "Ticket Number"
+        """
+        return self._json_content['reference']
+
+    @property
+    def answers(self) -> str:
+        """
+        Answers to ticket specific questions
+        """
+        # The answers are part of the extended data for a ticket, therefore if it is not present
+        # try getting the extended view
+        if 'answers' not in self._json_content:
+            self._populate_json()
+        return self._json_content['answers']
