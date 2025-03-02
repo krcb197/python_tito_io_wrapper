@@ -90,6 +90,13 @@ class Ticket(AdminAPIBase):
         return self._json_content['name']
 
     @property
+    def email(self) -> str:
+        """
+        Email of the ticket holder
+        """
+        return self._json_content['email']
+
+    @property
     def reference(self) -> str:
         """
         Ticket reference (this is shown in guest emails) and therefore with is what ticket holder
