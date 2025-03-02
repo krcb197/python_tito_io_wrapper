@@ -44,7 +44,7 @@ class Ticket(AdminAPIBase):
     One of the tickets for an event available through the Tito IO AdminAPI
     """
 
-    def __init__(self, account_slug:str, event_slug:str, ticket_slug:str,
+    def __init__(self, *, account_slug:str, event_slug:str, ticket_slug:str,
                  json_content:Optional[dict[str, Any]]=None,
                  allow_automatic_json_retrieval: bool=False) -> None:
         if json_content is None and allow_automatic_json_retrieval is False:
