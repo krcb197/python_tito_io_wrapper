@@ -45,8 +45,13 @@ class Ticket(AdminAPIBase):
     """
 
     def __init__(self, account_slug:str, event_slug:str, ticket_slug:str,
-                 json_content:Optional[dict[str, Any]]=None) -> None:
-        super().__init__(json_content=json_content)
+                 json_content:Optional[dict[str, Any]]=None,
+                 allow_automatic_json_retrieval: bool=False) -> None:
+        if json_content is None and allow_automatic_json_retrieval is False:
+            raise RuntimeError('If the JSON content is not provided at initialisation, '
+                               'runtime retrival is needed')
+        super().__init__(json_content=json_content,
+                         allow_automatic_json_retrieval=allow_automatic_json_retrieval)
         self.__account_slug = account_slug
         self.__event_slug = event_slug
         self.__ticket_slug = ticket_slug
