@@ -95,6 +95,20 @@ class Ticket(AdminAPIBase):
         return self._json_content['name']
 
     @property
+    def first_name(self) -> str:
+        """
+        First Name of the ticket holder
+        """
+        return self._json_content['first_name']
+
+    @property
+    def last_name(self) -> str:
+        """
+        Last Name of the ticket holder
+        """
+        return self._json_content['last_name']
+
+    @property
     def email(self) -> str:
         """
         Email of the ticket holder
