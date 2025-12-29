@@ -21,8 +21,10 @@ from typing import Optional, Any
 
 from datetime import datetime
 
-from ._base_client import AdminAPIBase
+from ._base_client import AdminAPIBase, datetime_from_json
 from .ticket import Ticket
+from .release import Release
+from .activity import Activity
 
 
 class Event(AdminAPIBase):
@@ -36,6 +38,9 @@ class Event(AdminAPIBase):
         super().__init__(json_content=json_content, api_key=api_key)
         self.__account_slug = account_slug
         self.__event_slug = event_slug
+        if json_content is not None:
+            if self._json_content['_type'] != "event":
+                raise ValueError('JSON content type was expected to be ticket')
 
     @property
     def _account_slug(self) -> str:
@@ -44,7 +49,6 @@ class Event(AdminAPIBase):
     @property
     def _event_slug(self) -> str:
         return self.__event_slug
-
 
     @property
     def _end_point(self) -> str:
@@ -79,4 +83,49 @@ class Event(AdminAPIBase):
         """
         Start date and time for the event
         """
-        return datetime.fromisoformat(self._json_content['start_at'])
+        json_content = self._json_content['start_at']
+        return datetime_from_json(json_value=json_content)
+
+    @property
+    def end_at(self) -> datetime:
+        """
+        End date and time for the event
+        """
+        json_content = self._json_content['end_at']
+        return datetime_from_json(json_value=json_content)
+
+    def __release_getter(self) -> dict[str, Release]:
+
+        def release_factory(json_content:dict[str, Any]) -> tuple[str, Release]:
+            release_slug = json_content['slug']
+            return release_slug, Release(event_slug=self.__event_slug,
+                                         account_slug=self._account_slug,
+                                         release_slug=release_slug,
+                                         json_content=json_content)
+
+        response = self._get_response('releases')
+        return dict(release_factory(release) for release in response['releases'])
+
+    @property
+    def releases(self) -> dict[str, Release]:
+        """
+        retrieve all the releases for the event
+        """
+        return self.__release_getter()
+
+    def __activity_getter(self) -> list[Activity]:
+
+        def activity_factory(json_content:dict[str, Any]) -> Activity:
+            activity_id = json_content['id']
+            return Activity(event_slug=self.__event_slug, account_slug=self._account_slug,
+                            activity_id=activity_id, json_content=json_content)
+
+        response = self._get_response('activities')
+        return [activity_factory(activity) for activity in response['activities']]
+
+    @property
+    def activities(self) -> list[Activity]:
+        """
+        retrieve all the activities for the event
+        """
+        return self.__activity_getter()

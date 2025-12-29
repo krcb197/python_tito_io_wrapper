@@ -34,7 +34,7 @@ def test_bad_api_key():
 
 def test_pytito_connection(pytito_account):
     """
-    test the the connection to the pytito account (used by many of the other tests) works
+    test the connection to the pytito account (used by many of the other tests) works
     correctly
     """
     assert isinstance(pytito_account, Account)

@@ -20,6 +20,7 @@ This file provides the base class for the AdminAPI classses
 import os
 from abc import ABC
 from typing import Any, Optional
+from datetime import datetime
 
 import requests
 
@@ -98,3 +99,43 @@ class AdminAPIBase(ABC):
             raise RuntimeError(f'Hello failed with status code: {response.status_code}')
 
         return response.json()
+
+class EventChildAPIBase(AdminAPIBase, ABC):
+    """
+    Base Class for the children of an event e.g. Tickets, Releases, Actvities
+    """
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, *, account_slug:str, event_slug:str,
+                 json_content:Optional[dict[str, Any]]=None,
+                 allow_automatic_json_retrieval: bool=False) -> None:
+        if json_content is None and allow_automatic_json_retrieval is False:
+            raise RuntimeError('If the JSON content is not provided at initialisation, '
+                               'runtime retrival is needed')
+        super().__init__(json_content=json_content,
+                         allow_automatic_json_retrieval=allow_automatic_json_retrieval)
+        self.__account_slug = account_slug
+        self.__event_slug = event_slug
+
+    @property
+    def _account_slug(self) -> str:
+        return self.__account_slug
+
+    @property
+    def _event_slug(self) -> str:
+        return self.__event_slug
+
+def datetime_from_json(json_value: str) -> datetime:
+    """
+    convert the isoformat datetime from the json content to a python object
+    """
+    return datetime.fromisoformat(json_value)
+
+def optional_datetime_from_json(json_value: str) -> Optional[datetime]:
+    """
+    convert the isoformat datetime from the json content to a python object, with support for
+    a null (unpopulated value)
+    """
+    if json_value is None:
+        return None
+    return datetime.fromisoformat(json_value)

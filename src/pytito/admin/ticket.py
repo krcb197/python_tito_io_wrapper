@@ -20,7 +20,7 @@ This file provides the ticket class
 from typing import Optional, Any
 import sys
 
-from ._base_client import AdminAPIBase
+from ._base_client import EventChildAPIBase
 
 if sys.version_info < (3,11):
     from strenum import StrEnum
@@ -39,7 +39,7 @@ class TicketState(StrEnum):
     VOID = 'void'
 
 
-class Ticket(AdminAPIBase):
+class Ticket(EventChildAPIBase):
     """
     One of the tickets for an event available through the Tito IO AdminAPI
     """
@@ -47,22 +47,14 @@ class Ticket(AdminAPIBase):
     def __init__(self, *, account_slug:str, event_slug:str, ticket_slug:str,
                  json_content:Optional[dict[str, Any]]=None,
                  allow_automatic_json_retrieval: bool=False) -> None:
-        if json_content is None and allow_automatic_json_retrieval is False:
-            raise RuntimeError('If the JSON content is not provided at initialisation, '
-                               'runtime retrival is needed')
         super().__init__(json_content=json_content,
+                         account_slug=account_slug,
+                         event_slug=event_slug,
                          allow_automatic_json_retrieval=allow_automatic_json_retrieval)
-        self.__account_slug = account_slug
-        self.__event_slug = event_slug
         self.__ticket_slug = ticket_slug
-
-    @property
-    def _account_slug(self) -> str:
-        return self.__account_slug
-
-    @property
-    def _event_slug(self) -> str:
-        return self.__event_slug
+        if json_content is not None:
+            if self._json_content['_type'] != "ticket":
+                raise ValueError('JSON content type was expected to be ticket')
 
     @property
     def _ticket_slug(self) -> str:
@@ -79,11 +71,13 @@ class Ticket(AdminAPIBase):
             raise ValueError('slug in json content does not match expected value')
         if self._json_content['view'] != 'extended':
             raise ValueError('expected the extended view of the ticket')
+        if self._json_content['_type'] != "ticket":
+            raise ValueError('JSON content type was expected to be ticket')
 
     @property
     def state(self) -> TicketState:
         """
-        Event title
+        Ticket State
         """
         return TicketState(self._json_content['state'])
 
