@@ -129,3 +129,17 @@ class Event(AdminAPIBase):
         retrieve all the activities for the event
         """
         return self.__activity_getter()
+
+    @property
+    def live(self) -> bool:
+        """
+        Whether the event is live (or draft)
+        """
+        return self._json_content['live']
+
+    @property
+    def test_mode(self) -> bool:
+        """
+        Whether the event is in test mode
+        """
+        return self._json_content['test_mode']
