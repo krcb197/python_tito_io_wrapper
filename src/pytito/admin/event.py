@@ -143,4 +143,3 @@ class Event(AdminAPIBase):
         Whether the event is in test mode
         """
         return self._json_content['test_mode']
-
