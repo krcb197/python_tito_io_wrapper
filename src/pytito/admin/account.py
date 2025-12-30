@@ -52,16 +52,15 @@ class Account(AdminAPIBase):
             raise ValueError('slug in json content does not match expected value')
 
     def __event_getter(self, end_point: str) -> dict[str, Event]:
-        response = self._get_response(end_point)
-        return_dict:dict[str, Event] = {}
-        for event in response['events']:
-            if event['account_slug'] != self._account_slug:
-                raise RuntimeError('Account Slug inconsistency')
-            slug = event['slug']
-            return_dict[slug] = Event(event_slug=slug, account_slug=self._account_slug,
+
+        def event_factory(json_content:dict[str, Any]) -> tuple[str, Event]:
+            event_slug = json_content['slug']
+            return event_slug, Event(event_slug=event_slug, account_slug=self._account_slug,
                                       api_key=self.__api_key_internal,
-                                      json_content=event)
-        return return_dict
+                                      json_content=json_content)
+
+        response = self._get_response(end_point)
+        return dict(event_factory(event) for event in response['events'])
 
     @property
     def events(self) -> dict[str, Event]:

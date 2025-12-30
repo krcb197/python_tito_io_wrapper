@@ -120,7 +120,8 @@ def mocked_admin_api_implementation(requests_mock, mocked_data):
                           json={'account': {'name': account.name, 'slug': account.slug}})
         requests_mock.get(f"https://api.tito.io/v3/{account.slug}/events", status_code=200,
                           json={'events': [
-                              {'title': event.title,
+                              {'_type':'event',
+                               'title': event.title,
                                'slug': event.slug,
                                'start_at': event.start_at.isoformat(timespec='milliseconds'),
                                'account_slug': account.slug}
