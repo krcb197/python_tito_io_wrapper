@@ -175,7 +175,7 @@ def datetime_to_json(value: datetime) -> str:
         raise TypeError(f'value must be a datetime, got {type(value)}')
     # Check the value has a timezone specified
     if not is_timezone_aware(value):
-        raise ValueError(f'value must have a timezone to be successfully converted')
+        raise ValueError('value must have a timezone to be successfully converted')
     return value.isoformat()
 
 def optional_datetime_from_json(json_value: str) -> Optional[datetime]:
