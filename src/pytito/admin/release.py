@@ -126,7 +126,7 @@ class Release(EventChildAPIBase):
         if value is None:
             self._update({'end_at': None})
         else:
-            if self.end_at is not None and value <= self.start_at:
+            if self.start_at is not None and value <= self.start_at:
                 raise ValueError(f'new end_at ({value}) is before the start_at ({self.end_at})')
             value_str = datetime_to_json(value)
             self._update({'end_at': value_str})
