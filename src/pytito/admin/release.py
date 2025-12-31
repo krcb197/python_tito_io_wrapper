@@ -20,7 +20,7 @@ This file provides the release class
 from typing import Optional, Any
 from datetime import datetime
 
-from ._base_client import EventChildAPIBase, optional_datetime_from_json
+from ._base_client import EventChildAPIBase, optional_datetime_from_json, datetime_to_json
 
 class Release(EventChildAPIBase):
     """
@@ -57,12 +57,36 @@ class Release(EventChildAPIBase):
         if self._json_content['_type'] != "release":
             raise ValueError('JSON content type was expected to be release')
 
+    def _update(self, payload: dict[str, Any]) -> None:
+        self._patch_reponse(value={'release': payload})
+        for key, value in payload.items():
+            self._json_content[key] = value
+
+    def _update_slug(self, new_slug: str) -> None:
+        """
+        The Slug is a unique component of the data used to reference the release in the API.
+        It is sometimes desirable to change this
+
+        .. Warning::
+            Changing the slug may break things, especially if it clashes with another slug.
+            Use this method with caution. In particular, the slug is used to key other
+            dictionaries within the data model. Once changing the clug it is recommended that
+            the whole data model is refreshed
+        """
+        self._update({'slug': new_slug})
+        self.__release_slug = new_slug
+
+
     @property
     def title(self) -> str:
         """
         Title of the release
         """
         return self._json_content['title']
+
+    @title.setter
+    def title(self, value: str) -> None:
+        self._update({'title': value})
 
     @property
     def secret(self) -> bool:
@@ -79,6 +103,16 @@ class Release(EventChildAPIBase):
         json_value = self._json_content['start_at']
         return optional_datetime_from_json(json_value=json_value)
 
+    @start_at.setter
+    def start_at(self, value: Optional[datetime]) -> None:
+        if value is None:
+            self._update({'start_at': None})
+        else:
+            if self.end_at is not None and value >= self.end_at:
+                raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
+            value_str = datetime_to_json(value)
+            self._update({'start_at': value_str})
+
     @property
     def end_at(self) -> Optional[datetime]:
         """
@@ -86,6 +120,16 @@ class Release(EventChildAPIBase):
         """
         json_value = self._json_content['end_at']
         return optional_datetime_from_json(json_value=json_value)
+
+    @end_at.setter
+    def end_at(self, value: Optional[datetime]) -> None:
+        if value is None:
+            self._update({'end_at': None})
+        else:
+            if self.start_at is not None and value <= self.start_at:
+                raise ValueError(f'new end_at ({value}) is before the start_at ({self.start_at})')
+            value_str = datetime_to_json(value)
+            self._update({'end_at': value_str})
 
     @property
     def quantity(self) -> Optional[int]:

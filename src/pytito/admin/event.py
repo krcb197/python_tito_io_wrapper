@@ -21,7 +21,7 @@ from typing import Optional, Any
 
 from datetime import datetime
 
-from ._base_client import AdminAPIBase, datetime_from_json
+from ._base_client import AdminAPIBase, datetime_from_json, datetime_to_json
 from .ticket import Ticket
 from .release import Release
 from .activity import Activity
@@ -53,6 +53,16 @@ class Event(AdminAPIBase):
     @property
     def _end_point(self) -> str:
         return super()._end_point + f'/{self._account_slug}/{self._event_slug}'
+
+    def _populate_json(self) -> None:
+        self._json_content = self._get_response(endpoint='')['event']
+        if self._json_content['_type'] != "event":
+            raise ValueError('JSON content type was expected to be ticket')
+
+    def _update(self, payload: dict[str, Any]) -> None:
+        self._patch_reponse(value={'event': payload})
+        for key, value in payload.items():
+            self._json_content[key] = value
 
     @property
     def title(self) -> str:
@@ -86,6 +96,18 @@ class Event(AdminAPIBase):
         json_content = self._json_content['start_at']
         return datetime_from_json(json_value=json_content)
 
+    @start_at.setter
+    def start_at(self, value: datetime) -> None:
+        if value >= self.end_at:
+            raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
+        # the start_at can not be changed directly, instead it is necessary to modify the
+        # date and time
+        payload = {'start_date': value.strftime("%Y-%m-%d"),
+                   'start_time': value.strftime("%H:%M")}
+        self._patch_reponse(value={'event': payload})
+        value_str = datetime_to_json(value)
+        self._json_content['start_at'] = value_str
+
     @property
     def end_at(self) -> datetime:
         """
@@ -93,6 +115,18 @@ class Event(AdminAPIBase):
         """
         json_content = self._json_content['end_at']
         return datetime_from_json(json_value=json_content)
+
+    @end_at.setter
+    def end_at(self, value: datetime) -> None:
+        if value <= self.start_at:
+            raise ValueError(f'new end_at ({value}) is before the start_at ({self.start_at})')
+        # the end_at can not be changed directly, instead it is necessary to modify the
+        # date and time
+        payload = {'end_date': value.strftime("%Y-%m-%d"),
+                   'end_time': value.strftime("%H:%M")}
+        self._patch_reponse(value={'event': payload})
+        value_str = datetime_to_json(value)
+        self._json_content['end_at'] = value_str
 
     def __release_getter(self) -> dict[str, Release]:
 

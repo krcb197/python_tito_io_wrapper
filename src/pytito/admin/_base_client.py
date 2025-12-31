@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This file provides the base class for the AdminAPI classses
 """
+import json
 import os
 from abc import ABC
 from typing import Any, Optional
@@ -35,6 +36,11 @@ class UnpopulatedException(Exception):
 class UnauthorizedException(Exception):
     """
     Exception for the request not being authenticated
+    """
+
+class ForbiddenException(Exception):
+    """
+    Exception for the request being authenticated but forbidden
     """
 
 
@@ -95,10 +101,36 @@ class AdminAPIBase(ABC):
         if response.status_code == 401:
             raise UnauthorizedException(response.json()['message'])
 
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
         if not response.status_code == 200:
             raise RuntimeError(f'Hello failed with status code: {response.status_code}')
 
         return response.json()
+
+    def _patch_reponse(self, value: dict[str, Any]) -> None:
+
+        response = requests.patch(
+            url=self._end_point,
+            headers={"Accept" : "application/json",
+                     "Authorization" : f"Token token={self.__api_key()}"},
+            json=value,
+            timeout=10.0
+        )
+
+        if response.status_code == 401:
+            raise UnauthorizedException(response.json()['message'])
+
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
+        if not response.status_code == 200:
+            raise RuntimeError(f'patch failed with status code: {response.status_code}')
+
+
 
 class EventChildAPIBase(AdminAPIBase, ABC):
     """
@@ -130,6 +162,21 @@ def datetime_from_json(json_value: str) -> datetime:
     convert the isoformat datetime from the json content to a python object
     """
     return datetime.fromisoformat(json_value)
+
+def datetime_to_json(value: datetime) -> str:
+    """
+    convert a datetime object to the isoformat string datetime used in the json content
+    """
+
+    def is_timezone_aware(dt: datetime) -> bool:
+        return dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
+
+    if not isinstance(value, datetime):
+        raise TypeError(f'value must be a datetime, got {type(value)}')
+    # Check the value has a timezone specified
+    if not is_timezone_aware(value):
+        raise ValueError('value must have a timezone to be successfully converted')
+    return value.isoformat()
 
 def optional_datetime_from_json(json_value: str) -> Optional[datetime]:
     """

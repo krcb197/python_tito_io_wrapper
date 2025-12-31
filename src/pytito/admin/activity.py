@@ -20,7 +20,7 @@ This file provides the activity class
 from typing import Optional, Any
 from datetime import datetime
 
-from ._base_client import EventChildAPIBase, optional_datetime_from_json
+from ._base_client import EventChildAPIBase, optional_datetime_from_json, datetime_to_json
 
 class Activity(EventChildAPIBase):
     """
@@ -55,6 +55,11 @@ class Activity(EventChildAPIBase):
         if self._json_content['view'] != 'extended':
             raise ValueError('expected the extended view of the ticket')
 
+    def _update(self, payload: dict[str, Any]) -> None:
+        self._patch_reponse(value={'activity': payload})
+        for key, value in payload.items():
+            self._json_content[key] = value
+
     @property
     def name(self) -> str:
         """
@@ -77,10 +82,61 @@ class Activity(EventChildAPIBase):
         json_value = self._json_content['start_at']
         return optional_datetime_from_json(json_value=json_value)
 
+    @start_at.setter
+    def start_at(self, value: Optional[datetime]) -> None:
+        payload : dict[str, Any]
+        if value is None:
+            if self.end_at is not None:
+                raise RuntimeError('The activity is not allowed end time without a start, '
+                                   'set the end_at to None first')
+            payload = {'date': None,
+                       'start_time': None}
+            self._patch_reponse(value={'activity': payload})
+            self._json_content['start_at'] = None
+        else:
+            if self.end_at is not None and self.end_at.date() != value.date():
+                raise ValueError('The start_at and end_at must share a common date, '
+                                 'you may need to set the end date to None to mke this change')
+            if self.end_at is not None and value >= self.end_at:
+                raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
+            # the start_at can not be changed directly, instead it is necessary to modify the
+            # date and time
+            payload = {'date': value.strftime("%Y-%m-%d"),
+                       'start_time': value.strftime("%H:%M")}
+            self._patch_reponse(value={'activity': payload})
+            value_str = datetime_to_json(value)
+            self._json_content['start_at'] = value_str
+
     @property
     def end_at(self) -> Optional[datetime]:
         """
         End date and time for the activity
         """
+        # There is an anomaly that the end_at reports a value if the `end_time` is none but the
+        # date is set to sometime
+        if self._json_content['end_time'] is None:
+            return None
         json_value = self._json_content['end_at']
         return optional_datetime_from_json(json_value=json_value)
+
+    @end_at.setter
+    def end_at(self, value: Optional[datetime]) -> None:
+        payload: dict[str, Any]
+        if value is None:
+            payload = {'end_time': None}
+            self._patch_reponse(value={'activity': payload})
+            self._json_content['end_at'] = None
+        else:
+            if self.start_at is None:
+                raise ValueError('An activity needs to have a start time to allow an end time'
+                                 ' to be sent, please configure the start_at first')
+            if self.start_at.date() != value.date():
+                raise ValueError('The start_at and end_at must share a common date')
+            if value <= self.start_at:
+                raise ValueError(f'new end_at ({value}) is before the start_at ({self.start_at})')
+            # the start_at can not be changed directly, instead it is necessary to modify the
+            # date and time
+            payload = {'end_time': value.strftime("%H:%M")}
+            self._patch_reponse(value={'activity': payload})
+            value_str = datetime_to_json(value)
+            self._json_content['end_at'] = value_str
