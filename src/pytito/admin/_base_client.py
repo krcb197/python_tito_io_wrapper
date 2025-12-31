@@ -155,6 +155,22 @@ class AdminAPIBase(ABC):
         if response.status_code not in [200, 201]:
             raise RuntimeError(f'post failed with status code: {response.status_code}')
 
+    def _delete_response(self) -> None:
+
+        response = requests.patch(
+            url=self._end_point,
+            headers={"Accept" : "application/json",
+                     "Authorization" : f"Token token={self.__api_key()}"},
+            timeout=10.0
+        )
+
+        if response.status_code == 401:
+            raise UnauthorizedException(response.json()['message'])
+
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
 
 
 class EventChildAPIBase(AdminAPIBase, ABC):

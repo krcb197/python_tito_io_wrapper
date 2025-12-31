@@ -64,7 +64,7 @@ class Event(AdminAPIBase):
             raise ValueError('JSON content type was expected to be ticket')
 
     def _update(self, payload: dict[str, Any]) -> None:
-        self._patch_reponse(value={'event': payload})
+        self._patch_response(value={'event': payload})
         for key, value in payload.items():
             self._json_content[key] = value
 
@@ -126,7 +126,7 @@ class Event(AdminAPIBase):
         # date and time
         payload = {'start_date': value.strftime("%Y-%m-%d"),
                    'start_time': value.strftime("%H:%M")}
-        self._patch_reponse(value={'event': payload})
+        self._patch_response(value={'event': payload})
         value_str = datetime_to_json(value)
         self._json_content['start_at'] = value_str
 
@@ -146,7 +146,7 @@ class Event(AdminAPIBase):
         # date and time
         payload = {'end_date': value.strftime("%Y-%m-%d"),
                    'end_time': value.strftime("%H:%M")}
-        self._patch_reponse(value={'event': payload})
+        self._patch_response(value={'event': payload})
         value_str = datetime_to_json(value)
         self._json_content['end_at'] = value_str
 
