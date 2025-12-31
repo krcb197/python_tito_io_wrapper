@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 This file provides the base class for the AdminAPI classses
 """
+import json
 import os
 from abc import ABC
 from typing import Any, Optional
@@ -35,6 +36,11 @@ class UnpopulatedException(Exception):
 class UnauthorizedException(Exception):
     """
     Exception for the request not being authenticated
+    """
+
+class ForbiddenException(Exception):
+    """
+    Exception for the request being authenticated but forbidden
     """
 
 
@@ -95,10 +101,36 @@ class AdminAPIBase(ABC):
         if response.status_code == 401:
             raise UnauthorizedException(response.json()['message'])
 
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
         if not response.status_code == 200:
             raise RuntimeError(f'Hello failed with status code: {response.status_code}')
 
         return response.json()
+
+    def _patch_reponse(self, value: dict[str, Any]) -> None:
+
+        response = requests.patch(
+            url=self._end_point,
+            headers={"Accept" : "application/json",
+                     "Authorization" : f"Token token={self.__api_key()}"},
+            json=value,
+            timeout=10.0
+        )
+
+        if response.status_code == 401:
+            raise UnauthorizedException(response.json()['message'])
+
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
+        if not response.status_code == 200:
+            raise RuntimeError(f'patch failed with status code: {response.status_code}')
+
+
 
 class EventChildAPIBase(AdminAPIBase, ABC):
     """
