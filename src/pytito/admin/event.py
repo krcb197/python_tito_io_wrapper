@@ -33,10 +33,10 @@ class Event(AdminAPIBase):
     One of the events available through the Tito IO AdminAPI
     """
 
-    def __init__(self, account_slug:str, event_slug:str,
+    def __init__(self, *, account_slug:str, event_slug:str,
                  json_content:Optional[dict[str, Any]]=None,
                  api_key: Optional[str] = None,
-                 allow_automatic_json_retrieval=False) -> None:
+                 allow_automatic_json_retrieval:bool=False) -> None:
         super().__init__(json_content=json_content, api_key=api_key,
                          allow_automatic_json_retrieval=allow_automatic_json_retrieval)
         self.__account_slug = account_slug
@@ -201,15 +201,24 @@ class Event(AdminAPIBase):
         return self._json_content['test_mode']
 
     def duplicate_event(self, title:str, slug:Optional[str]=None) -> "Event":
+        """
+        Duplicate the event and then update the title and optionally the new slug for the
+        created event
+        :param title: New event title
+        :param slug: New event slug, a value of None will leave the automatically created slug in
+                     place
+        :return: The newly created event
+        """
         self._post_response('duplication', value={})
         for _ in range(120):
             time.sleep(1)
             duplication_status = self._get_duplication_status()
             status = duplication_status['status']
-            if duplication_status['status'] == 'processing':
+            if status == 'processing':
+                # pylint:disable-next=bad-builtin
                 print('Duplication in progress')
                 continue
-            if duplication_status['status'] == 'complete':
+            if status == 'complete':
                 new_slug = duplication_status['slug']
                 new_title = duplication_status['title']
                 new_event = Event(account_slug=self.__account_slug,
@@ -221,8 +230,13 @@ class Event(AdminAPIBase):
                     raise ValueError(f'New event has different title to reported value:{new_title}')
                 new_event.title = title
                 if slug is not None:
+                    # The update slug method is a powerful option that is not normally exposed
+                    # to the users so is private
+                    # pylint:disable-next=protected-access
                     new_event._update_slug(slug)
                 return new_event
+
+            raise ValueError('Unhandled {status=}')
 
         raise RuntimeError('Timeout During Event Duplication')
 
@@ -232,9 +246,8 @@ class Event(AdminAPIBase):
             raise RuntimeError('Duplication response does not have a value of _type=_duplication')
         return duplication_status
 
-    def _delete_event(self):
+    def _delete_event(self) -> None:
         """
         Delete the event
         """
         self._delete_response()
-

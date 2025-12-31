@@ -77,6 +77,7 @@ class Account(AdminAPIBase):
 
         # in some case draft event may not have a start date configured so must be excluded
         def include_event(event: Event) -> bool:
+            # pylint:disable-next=protected-access
             return event._json_content['start_at'] is not None
 
         upcoming_events = list(filter(include_event, self.events.values()))
