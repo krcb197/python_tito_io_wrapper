@@ -55,11 +55,11 @@ class Event(AdminAPIBase):
         return super()._end_point + f'/{self._account_slug}/{self._event_slug}'
 
     def _populate_json(self) -> None:
-        self.__json_content = self._get_response(endpoint='')['event']
+        self._json_content = self._get_response(endpoint='')['event']
         if self._json_content['_type'] != "event":
             raise ValueError('JSON content type was expected to be ticket')
 
-    def _update(self, payload: dict[str, Any]):
+    def _update(self, payload: dict[str, Any]) -> None:
         self._patch_reponse(value={'event': payload})
         for key, value in payload.items():
             self._json_content[key] = value

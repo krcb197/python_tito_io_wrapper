@@ -55,7 +55,7 @@ class Activity(EventChildAPIBase):
         if self._json_content['view'] != 'extended':
             raise ValueError('expected the extended view of the ticket')
 
-    def _update(self, payload: dict[str, Any]):
+    def _update(self, payload: dict[str, Any]) -> None:
         self._patch_reponse(value={'activity': payload})
         for key, value in payload.items():
             self._json_content[key] = value
@@ -84,6 +84,7 @@ class Activity(EventChildAPIBase):
 
     @start_at.setter
     def start_at(self, value: Optional[datetime]) -> None:
+        payload : dict[str, Any]
         if value is None:
             if self.end_at is not None:
                 raise RuntimeError('The activity is not allowed end time without a start, '
@@ -94,7 +95,8 @@ class Activity(EventChildAPIBase):
             self._json_content['start_at'] = None
         else:
             if self.end_at is not None and self.end_at.date() != value.date():
-                raise ValueError(f'The start_at and end_at must share a common date, you may need to set the end date to None to mke this change')
+                raise ValueError('The start_at and end_at must share a common date, '
+                                 'you may need to set the end date to None to mke this change')
             if self.end_at is not None and value >= self.end_at:
                 raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
             # the start_at can not be changed directly, instead it is necessary to modify the
@@ -119,15 +121,17 @@ class Activity(EventChildAPIBase):
 
     @end_at.setter
     def end_at(self, value: Optional[datetime]) -> None:
+        payload: dict[str, Any]
         if value is None:
             payload = {'end_time': None}
             self._patch_reponse(value={'activity': payload})
             self._json_content['end_at'] = None
         else:
             if self.start_at is None:
-                raise ValueError('An activity needs to have a start time to allow an end time to be sent, please configure the start_at first')
+                raise ValueError('An activity needs to have a start time to allow an end time'
+                                 ' to be sent, please configure the start_at first')
             if self.start_at.date() != value.date():
-                raise ValueError(f'The start_at and end_at must share a common date')
+                raise ValueError('The start_at and end_at must share a common date')
             if value <= self.start_at:
                 raise ValueError(f'new end_at ({value}) is before the start_at ({self.start_at})')
             # the start_at can not be changed directly, instead it is necessary to modify the

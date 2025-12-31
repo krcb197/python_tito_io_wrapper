@@ -57,12 +57,12 @@ class Release(EventChildAPIBase):
         if self._json_content['_type'] != "release":
             raise ValueError('JSON content type was expected to be release')
 
-    def _update(self, payload: dict[str, Any]):
+    def _update(self, payload: dict[str, Any]) -> None:
         self._patch_reponse(value={'release': payload})
         for key, value in payload.items():
             self._json_content[key] = value
 
-    def _update_slug(self, new_slug: str):
+    def _update_slug(self, new_slug: str) -> None:
         """
         The Slug is a unique component of the data used to reference the release in the API.
         It is sometimes desirable to change this
