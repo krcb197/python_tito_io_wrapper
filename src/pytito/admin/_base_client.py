@@ -110,7 +110,7 @@ class AdminAPIBase(ABC):
 
         return response.json()
 
-    def _patch_reponse(self, value: dict[str, Any]) -> None:
+    def _patch_response(self, value: dict[str, Any]) -> None:
 
         response = requests.patch(
             url=self._end_point,
