@@ -58,7 +58,7 @@ class Release(EventChildAPIBase):
             raise ValueError('JSON content type was expected to be release')
 
     def _update(self, payload: dict[str, Any]) -> None:
-        self._patch_reponse(value={'release': payload})
+        self._patch_response(value={'release': payload})
         for key, value in payload.items():
             self._json_content[key] = value
 

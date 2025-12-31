@@ -56,7 +56,7 @@ class Activity(EventChildAPIBase):
             raise ValueError('expected the extended view of the ticket')
 
     def _update(self, payload: dict[str, Any]) -> None:
-        self._patch_reponse(value={'activity': payload})
+        self._patch_response(value={'activity': payload})
         for key, value in payload.items():
             self._json_content[key] = value
 
@@ -91,7 +91,7 @@ class Activity(EventChildAPIBase):
                                    'set the end_at to None first')
             payload = {'date': None,
                        'start_time': None}
-            self._patch_reponse(value={'activity': payload})
+            self._patch_response(value={'activity': payload})
             self._json_content['start_at'] = None
         else:
             if self.end_at is not None and self.end_at.date() != value.date():
@@ -103,7 +103,7 @@ class Activity(EventChildAPIBase):
             # date and time
             payload = {'date': value.strftime("%Y-%m-%d"),
                        'start_time': value.strftime("%H:%M")}
-            self._patch_reponse(value={'activity': payload})
+            self._patch_response(value={'activity': payload})
             value_str = datetime_to_json(value)
             self._json_content['start_at'] = value_str
 
@@ -124,7 +124,7 @@ class Activity(EventChildAPIBase):
         payload: dict[str, Any]
         if value is None:
             payload = {'end_time': None}
-            self._patch_reponse(value={'activity': payload})
+            self._patch_response(value={'activity': payload})
             self._json_content['end_at'] = None
         else:
             if self.start_at is None:
@@ -137,6 +137,6 @@ class Activity(EventChildAPIBase):
             # the start_at can not be changed directly, instead it is necessary to modify the
             # date and time
             payload = {'end_time': value.strftime("%H:%M")}
-            self._patch_reponse(value={'activity': payload})
+            self._patch_response(value={'activity': payload})
             value_str = datetime_to_json(value)
             self._json_content['end_at'] = value_str
