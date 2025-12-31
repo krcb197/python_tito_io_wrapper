@@ -232,3 +232,9 @@ class Event(AdminAPIBase):
             raise RuntimeError('Duplication response does not have a value of _type=_duplication')
         return duplication_status
 
+    def _delete_event(self):
+        """
+        Delete the event
+        """
+        self._delete_response()
+
