@@ -74,7 +74,12 @@ class Account(AdminAPIBase):
         """
         Return the chronologically first of the upcoming events
         """
-        upcoming_events = list(self.events.values())
+
+        # in some case draft event may not have a start date configured so must be excluded
+        def include_event(event: Event) -> bool:
+            return event._json_content['start_at'] is not None
+
+        upcoming_events = list(filter(include_event, self.events.values()))
         upcoming_events.sort(key=attrgetter('start_at'))
         return upcoming_events[0]
 
