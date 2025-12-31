@@ -163,6 +163,21 @@ def datetime_from_json(json_value: str) -> datetime:
     """
     return datetime.fromisoformat(json_value)
 
+def datetime_to_json(value: datetime) -> str:
+    """
+    convert a datetime object to the isoformat string datetime used in the json content
+    """
+
+    def is_timezone_aware(dt: datetime) -> bool:
+        return dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
+
+    if not isinstance(value, datetime):
+        raise TypeError(f'value must be a datetime, got {type(value)}')
+    # Check the value has a timezone specified
+    if not is_timezone_aware(value):
+        raise ValueError(f'value must have a timezone to be successfully converted')
+    return value.isoformat()
+
 def optional_datetime_from_json(json_value: str) -> Optional[datetime]:
     """
     convert the isoformat datetime from the json content to a python object, with support for
