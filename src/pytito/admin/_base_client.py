@@ -130,6 +130,31 @@ class AdminAPIBase(ABC):
         if not response.status_code == 200:
             raise RuntimeError(f'patch failed with status code: {response.status_code}')
 
+    def _post_response(self, endpoint: str, value: dict[str, Any]) -> None:
+
+        if endpoint == '':
+            full_end_point = self._end_point
+        else:
+            full_end_point = self._end_point + '/' + endpoint
+
+        response = requests.post(
+            url=full_end_point,
+            headers={"Accept" : "application/json",
+                     "Authorization" : f"Token token={self.__api_key()}"},
+            json=value,
+            timeout=10.0
+        )
+
+        if response.status_code == 401:
+            raise UnauthorizedException(response.json()['message'])
+
+        if response.status_code == 403:
+            detail = json.loads(response.text)
+            raise ForbiddenException(detail['errors']['detail'])
+
+        if response.status_code not in [200, 201]:
+            raise RuntimeError(f'post failed with status code: {response.status_code}')
+
 
 
 class EventChildAPIBase(AdminAPIBase, ABC):
