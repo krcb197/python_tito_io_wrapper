@@ -72,13 +72,13 @@ class Account(AdminAPIBase):
     @property
     def next_event(self) -> Event:
         """
-        Return the chronologically first of the upcoming events
+        Return the chronologically first of the upcoming events, excluding events without a
+        start_at set
         """
 
-        # in some case draft event may not have a start date configured so must be excluded
+        # in some case a start date configured so must be excluded
         def include_event(event: Event) -> bool:
-            # pylint:disable-next=protected-access
-            return event._json_content['start_at'] is not None
+            return event.start_at is not None
 
         upcoming_events = list(filter(include_event, self.events.values()))
         upcoming_events.sort(key=attrgetter('start_at'))
