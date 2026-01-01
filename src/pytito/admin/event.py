@@ -111,44 +111,99 @@ class Event(AdminAPIBase):
         return self.__ticket_getter()
 
     @property
-    def start_at(self) -> datetime:
+    def start_at(self) -> Optional[datetime]:
         """
         Start date and time for the event
         """
         json_content = self._json_content['start_at']
+        if json_content is None:
+            return None
         return datetime_from_json(json_value=json_content)
 
     @start_at.setter
-    def start_at(self, value: datetime) -> None:
-        if value >= self.end_at:
-            raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
-        # the start_at can not be changed directly, instead it is necessary to modify the
-        # date and time
-        payload = {'start_date': value.strftime("%Y-%m-%d"),
-                   'start_time': value.strftime("%H:%M")}
-        self._patch_response(value={'event': payload})
-        value_str = datetime_to_json(value)
-        self._json_content['start_at'] = value_str
+    def start_at(self, value: Optional[datetime]) -> None:
+        payload: dict[str, Any]
+        if value is None:
+            # it is not permitted to have only the start_at set to None so both need to be
+            # cleared
+            payload = {'end_date': None,
+                       'end_time': None,
+                       'start_date': None,
+                       'start_time': None
+                       }
+            self._patch_response(value={'event': payload})
+            self._json_content['end_at'] = None
+            self._json_content['start_at'] = None
+        else:
+            # it is not permitted to have a start_at without an end_at, in the case
+            # they get set to the same
+            if self.end_at is None:
+                payload = {'start_date': value.strftime("%Y-%m-%d"),
+                           'start_time': value.strftime("%H:%M"),
+                           'end_date': value.strftime("%Y-%m-%d"),
+                           'end_time': value.strftime("%H:%M")
+                           }
+                self._patch_response(value={'event': payload})
+                value_str = datetime_to_json(value)
+                self._json_content['start_at'] = value_str
+                self._json_content['end_at'] = value_str
+            else:
+                if value >= self.end_at:
+                    raise ValueError(f'new start_at ({value}) is after the end_at ({self.end_at})')
+                # the start_at can not be changed directly, instead it is necessary to modify the
+                # date and time
+                payload = {'start_date': value.strftime("%Y-%m-%d"),
+                           'start_time': value.strftime("%H:%M")}
+                self._patch_response(value={'event': payload})
+                value_str = datetime_to_json(value)
+            self._json_content['start_at'] = value_str
 
     @property
-    def end_at(self) -> datetime:
+    def end_at(self) -> Optional[datetime]:
         """
         End date and time for the event
         """
         json_content = self._json_content['end_at']
+        if json_content is None:
+            return None
         return datetime_from_json(json_value=json_content)
 
     @end_at.setter
-    def end_at(self, value: datetime) -> None:
-        if value <= self.start_at:
-            raise ValueError(f'new end_at ({value}) is before the start_at ({self.start_at})')
-        # the end_at can not be changed directly, instead it is necessary to modify the
-        # date and time
-        payload = {'end_date': value.strftime("%Y-%m-%d"),
-                   'end_time': value.strftime("%H:%M")}
-        self._patch_response(value={'event': payload})
-        value_str = datetime_to_json(value)
-        self._json_content['end_at'] = value_str
+    def end_at(self, value: Optional[datetime]) -> None:
+        payload: dict[str, Any]
+        if value is None:
+            # it is not permitted to have only the start_at set to None so both need to be
+            # cleared
+            payload = {'end_date': None,
+                       'end_time': None,
+                       'start_date': None,
+                       'start_time': None
+                       }
+            self._patch_response(value={'event': payload})
+            self._json_content['end_at'] = None
+            self._json_content['start_at'] = None
+        else:
+            if self.start_at is None:
+                payload = {'start_date': value.strftime("%Y-%m-%d"),
+                           'start_time': value.strftime("%H:%M"),
+                           'end_date': value.strftime("%Y-%m-%d"),
+                           'end_time': value.strftime("%H:%M")
+                           }
+                self._patch_response(value={'event': payload})
+                value_str = datetime_to_json(value)
+                self._json_content['start_at'] = value_str
+                self._json_content['end_at'] = value_str
+            else:
+                if value <= self.start_at:
+                    raise ValueError(f'new end_at ({value}) is '
+                                     f'before the start_at ({self.start_at})')
+                # the end_at can not be changed directly, instead it is necessary to modify the
+                # date and time
+                payload = {'end_date': value.strftime("%Y-%m-%d"),
+                           'end_time': value.strftime("%H:%M")}
+                self._patch_response(value={'event': payload})
+                value_str = datetime_to_json(value)
+                self._json_content['end_at'] = value_str
 
     def __release_getter(self) -> dict[str, Release]:
 
