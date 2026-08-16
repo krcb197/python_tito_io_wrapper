@@ -138,3 +138,36 @@ class Release(EventChildAPIBase):
         The number of tickets who can attend. A value of `None` means there is no limit
         """
         return self._json_content['quantity']
+
+    @property
+    def default_quantity(self) -> int:
+        """
+        The default number of tickets shown to users when the enter the event page
+        """
+        return self._json_content['default_quantity']
+
+    @default_quantity.setter
+    def default_quantity(self, value: int) -> None:
+        self._update({'default_quantity': value})
+
+    @property
+    def max_tickets_per_person(self) -> int:
+        """
+        The maximum number of this ticket type a person can book
+        """
+        return self._json_content['max_tickets_per_person']
+
+    @max_tickets_per_person.setter
+    def max_tickets_per_person(self, value: int) -> None:
+        self._update({'max_tickets_per_person': value})
+
+    @property
+    def min_tickets_per_person(self) -> int:
+        """
+        The minimum number of this ticket type a person can book
+        """
+        return self._json_content['min_tickets_per_person']
+
+    @min_tickets_per_person.setter
+    def min_tickets_per_person(self, value: int) -> None:
+        self._update({'min_tickets_per_person': value})
