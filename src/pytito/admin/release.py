@@ -91,7 +91,8 @@ class Release(EventChildAPIBase):
     @property
     def secret(self) -> bool:
         """
-        Title of the release
+        Whether the release is secret, i.e. only visible with a secret link. If this is False it
+        is visible to everyone onm the event page
         """
         return self._json_content['secret']
 
